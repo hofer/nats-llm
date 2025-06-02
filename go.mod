@@ -11,7 +11,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
-	google.golang.org/api v0.234.0
+	google.golang.org/api v0.235.0
 )
 
 require (

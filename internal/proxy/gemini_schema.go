@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/google/generative-ai-go/genai"
 	"github.com/ollama/ollama/api"
+	"github.com/ollama/ollama/types/model"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
@@ -14,6 +15,10 @@ import (
 
 func GetGeminiSchemaChat() (string, error) {
 	return marshalSchema(&api.ChatRequest{}, &api.ChatResponse{})
+}
+
+func GetGeminiSchemaShow() (string, error) {
+	return marshalSchema(&api.ShowRequest{}, &api.ShowResponse{})
 }
 
 func createHistoryContent(reqData api.ChatRequest) []*genai.Content {
@@ -129,7 +134,25 @@ func createGeminiToolSchema(reqData api.ChatRequest) []*genai.Tool {
 	return result
 }
 
-func createOllamaResponse(resp *genai.GenerateContentResponse) (api.ChatResponse, error) {
+const family = "gemini"
+
+func createOllamaShowResponse(modelInfo *genai.ModelInfo) (api.ShowResponse, error) {
+	capabilities := []model.Capability{}
+	for _, genMethod := range modelInfo.SupportedGenerationMethods {
+		capabilities = append(capabilities, model.Capability(genMethod))
+	}
+
+	result := api.ShowResponse{
+		//Model: modelInfo.Name,
+		ModelInfo: map[string]any{
+			fmt.Sprintf("%s.context_length", family): modelInfo.InputTokenLimit,
+		},
+		Capabilities: capabilities,
+	}
+	return result, nil
+}
+
+func createOllamaChatResponse(resp *genai.GenerateContentResponse) (api.ChatResponse, error) {
 	if len(resp.Candidates) > 1 {
 		return api.ChatResponse{}, errors.New("too many candidates. expecting only one candidate")
 	}

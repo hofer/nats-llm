@@ -70,3 +70,29 @@ func (n *NatsOllamaLLM) Embed(ctx context.Context, req *api.EmbedRequest) (api.E
 
 	return embedResponse, nil
 }
+
+func (n *NatsOllamaLLM) Show(ctx context.Context, req *api.ShowRequest) (api.ShowResponse, error) {
+	jsonStr, err := json.Marshal(req)
+	if err != nil {
+		return api.ShowResponse{}, err
+	}
+
+	remainingDuration := time.Second * 30
+	deadline, ok := ctx.Deadline()
+	if ok {
+		remainingDuration = time.Until(deadline)
+	}
+
+	msg, err := n.client.Request("ollama.show", jsonStr, remainingDuration)
+	if err != nil {
+		return api.ShowResponse{}, err
+	}
+
+	var showResponse api.ShowResponse
+	err = json.Unmarshal(msg.Data, &showResponse)
+	if err != nil {
+		return api.ShowResponse{}, err
+	}
+
+	return showResponse, nil
+}

@@ -52,3 +52,7 @@ func GetSchemaEmbedding() (string, error) {
 func GetSchemaChat() (string, error) {
 	return marshalSchema(&api.ChatRequest{}, &api.ChatResponse{})
 }
+
+func GetSchemaShow() (string, error) {
+	return marshalSchema(&api.ShowRequest{}, &api.ShowResponse{})
+}

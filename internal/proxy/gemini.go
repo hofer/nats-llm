@@ -61,6 +61,19 @@ func (n *NatsGeminiProxy) Start(nc *nats.Conn) error {
 	err = root.AddEndpoint("chat", micro.HandlerFunc(n.chatHandler), micro.WithEndpointMetadata(map[string]string{
 		"schema": chatSchema,
 	}))
+	if err != nil {
+		return err
+	}
+
+	// Show
+	showSchema, err := GetGeminiSchemaShow()
+	if err != nil {
+		return err
+	}
+	err = root.AddEndpoint("show", micro.HandlerFunc(n.showHandler), micro.WithEndpointMetadata(map[string]string{
+		"schema": showSchema,
+	}))
+
 	return err
 }
 
@@ -120,7 +133,88 @@ func (n *NatsGeminiProxy) chatHandler(req micro.Request) {
 		return
 	}
 
-	ollamaResp, err := createOllamaResponse(res)
+	ollamaResp, err := createOllamaChatResponse(res)
+	if err != nil {
+		log.Errorf("cannot create a response: %v", err)
+		req.Error("400", err.Error(), nil)
+		return
+	}
+
+	responseData, err := json.Marshal(ollamaResp)
+	if err != nil {
+		log.Errorf("cannot create a response: %v", err)
+		req.Error("400", err.Error(), nil)
+		return
+	}
+
+	log.Debug(string(responseData))
+	err = req.Respond(responseData)
+}
+
+func (n *NatsGeminiProxy) showHandler(req micro.Request) {
+	var reqData api.ShowRequest
+	err := json.Unmarshal(req.Data(), &reqData)
+	if err != nil {
+		req.Error("400", err.Error(), nil)
+		return
+	}
+
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, option.WithAPIKey(n.apiKey))
+	if err != nil {
+		log.Error(err)
+		req.Error("500", err.Error(), nil)
+		return
+	}
+	defer client.Close()
+
+	model := client.GenerativeModel(reqData.Model)
+
+	info, err := model.Info(context.Background())
+	if err != nil {
+		log.Error(err)
+		req.Error("500", err.Error(), nil)
+		return
+	}
+
+	//// Set system prompt if available in the message history:
+	//systemPrompt := createGeminiSystemPrompt(reqData)
+	//if systemPrompt != nil {
+	//	model.SystemInstruction = systemPrompt
+	//}
+	//
+	//// Before initiating a conversation, we tell the model which tools it has
+	//// at its disposal.
+	//model.Tools = createGeminiToolSchema(reqData)
+	//
+	//// For using tools, the chat mode is useful because it provides the required
+	//// chat context/history.
+	//session := model.StartChat()
+	//session.History = createHistoryContent(reqData)
+	//
+	//// User content can either be a user input or a tool response:
+	//userContentParts, contentErr := createUserContentParts(reqData)
+	//if contentErr != nil {
+	//	log.Errorf("session.SendMessage: %v", contentErr)
+	//	req.Error("500", contentErr.Error(), nil)
+	//	return
+	//}
+	//
+	//var res *genai.GenerateContentResponse
+	//sp := spinner.New()
+	//action := func() {
+	//	res, err = session.SendMessage(ctx, userContentParts...)
+	//	//res, err = model.GenerateContent(ctx, userContentParts...)
+	//}
+	//
+	//sp.Title(fmt.Sprintf("Generate content with model '%s'...", reqData.Model)).Action(action).Run()
+	//if err != nil {
+	//	log.Errorf("session.SendMessage: %v", err)
+	//	req.Error("500", err.Error(), nil)
+	//	return
+	//}
+
+	ollamaResp, err := createOllamaShowResponse(info)
 	if err != nil {
 		log.Errorf("cannot create a response: %v", err)
 		req.Error("400", err.Error(), nil)

@@ -92,6 +92,15 @@ func (n *NatsOllamaProxy) Start(nc *nats.Conn) error {
 	err = root.AddEndpoint("chat", micro.HandlerFunc(n.chatHandler), micro.WithEndpointMetadata(map[string]string{
 		"schema": chatSchema,
 	}))
+	if err != nil {
+		return err
+	}
+
+	// Show
+	showSchema, err := GetSchemaShow()
+	err = root.AddEndpoint("show", micro.HandlerFunc(n.showHandler), micro.WithEndpointMetadata(map[string]string{
+		"schema": showSchema,
+	}))
 	return err
 }
 
@@ -235,6 +244,58 @@ func (n *NatsOllamaProxy) chatHandler(req micro.Request) {
 		log.Error("Error marshalling response:", err)
 		req.Error("400", err.Error(), nil)
 	}
+}
+
+func (n *NatsOllamaProxy) showHandler(req micro.Request) {
+	var reqData api.ShowRequest
+	err := json.Unmarshal(req.Data(), &reqData)
+	if err != nil {
+		log.Error("Error unmarshalling request:", err)
+		req.Error("400", err.Error(), nil)
+		return
+	}
+
+	err = n.pullMissingModel(err, reqData.Model)
+	if err != nil {
+		log.Error("Error when checking/pulling a missing model:", err)
+		req.Error("500", err.Error(), nil)
+		return
+	}
+
+	ctxShow := context.Background()
+	var showError error
+	var resp *api.ShowResponse
+	sp := spinner.New()
+	action := func() {
+		resp, showError = n.client.Show(ctxShow, &reqData)
+	}
+
+	err = sp.Title(fmt.Sprintf("Processing show request for model '%s'...", reqData.Model)).Action(action).Run()
+	if showError != nil {
+		log.Error("Error on show response:", showError)
+		req.Error("400", showError.Error(), nil)
+		return
+	}
+
+	if err != nil {
+		log.Error("Error calling show:", err)
+		req.Error("400", err.Error(), nil)
+		return
+	}
+
+	responseData, err := json.Marshal(resp)
+	if err != nil {
+		log.Error("Error marshalling response:", err)
+		req.Error("400", err.Error(), nil)
+		return
+	}
+	
+	err = req.Respond(responseData)
+	if err != nil {
+		log.Error("Error on sending a show response:", err)
+		return
+	}
+	return
 }
 
 func (n *NatsOllamaProxy) pullMissingModel(err error, model string) error {

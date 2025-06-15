@@ -19,62 +19,35 @@ type NatsOllamaLLM struct {
 }
 
 func (n *NatsOllamaLLM) Chat(ctx context.Context, req *api.ChatRequest) (api.ChatResponse, error) {
-	jsonStr, err := json.Marshal(req)
-	if err != nil {
-		return api.ChatResponse{}, err
-	}
-
-	remainingDuration := time.Second * 30
-	deadline, ok := ctx.Deadline()
-	if ok {
-		remainingDuration = time.Until(deadline)
-	}
-
-	msg, err := n.client.Request("ollama.chat", jsonStr, remainingDuration)
-	if err != nil {
-		return api.ChatResponse{}, err
-	}
-
-	var chatResponse api.ChatResponse
-	err = json.Unmarshal(msg.Data, &chatResponse)
-	if err != nil {
-		return api.ChatResponse{}, err
-	}
-
-	return chatResponse, nil
+	var response api.ChatResponse
+	err := natsRequest(ctx, n.client, "ollama.chat", req, &response)
+	return response, err
 }
 
 func (n *NatsOllamaLLM) Embed(ctx context.Context, req *api.EmbedRequest) (api.EmbedResponse, error) {
-
-	jsonStr, err := json.Marshal(req)
-	if err != nil {
-		return api.EmbedResponse{}, err
-	}
-
-	remainingDuration := time.Second * 30
-	deadline, ok := ctx.Deadline()
-	if ok {
-		remainingDuration = time.Until(deadline)
-	}
-
-	msg, err := n.client.Request("ollama.embed", jsonStr, remainingDuration)
-	if err != nil {
-		return api.EmbedResponse{}, err
-	}
-
-	var embedResponse api.EmbedResponse
-	err = json.Unmarshal(msg.Data, &embedResponse)
-	if err != nil {
-		return api.EmbedResponse{}, err
-	}
-
-	return embedResponse, nil
+	var response api.EmbedResponse
+	err := natsRequest(ctx, n.client, "ollama.embed", req, &response)
+	return response, err
 }
 
 func (n *NatsOllamaLLM) Show(ctx context.Context, req *api.ShowRequest) (api.ShowResponse, error) {
+	var response api.ShowResponse
+	err := natsRequest(ctx, n.client, "ollama.show", req, &response)
+	return response, err
+}
+
+type ApiResponse interface {
+	*api.ShowResponse | *api.EmbedResponse | *api.ChatResponse
+}
+
+type ApiRequest interface {
+	*api.ShowRequest | *api.EmbedRequest | *api.ChatRequest
+}
+
+func natsRequest[T ApiRequest, A ApiResponse](ctx context.Context, n *nats.Conn, subject string, req T, resp A) error {
 	jsonStr, err := json.Marshal(req)
 	if err != nil {
-		return api.ShowResponse{}, err
+		return err
 	}
 
 	remainingDuration := time.Second * 30
@@ -83,16 +56,11 @@ func (n *NatsOllamaLLM) Show(ctx context.Context, req *api.ShowRequest) (api.Sho
 		remainingDuration = time.Until(deadline)
 	}
 
-	msg, err := n.client.Request("ollama.show", jsonStr, remainingDuration)
+	msg, err := n.Request(subject, jsonStr, remainingDuration)
 	if err != nil {
-		return api.ShowResponse{}, err
+		return err
 	}
 
-	var showResponse api.ShowResponse
-	err = json.Unmarshal(msg.Data, &showResponse)
-	if err != nil {
-		return api.ShowResponse{}, err
-	}
-
-	return showResponse, nil
+	err = json.Unmarshal(msg.Data, resp)
+	return err
 }

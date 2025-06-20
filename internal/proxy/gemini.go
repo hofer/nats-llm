@@ -32,6 +32,7 @@ func StartNatsGeminiProxy(natsUrl string, apiKey string) error {
 
 type NatsGeminiProxy struct {
 	apiKey string
+	client *genai.Client
 }
 
 func NewNatsGeminiProxy(apiKey string) *NatsGeminiProxy {
@@ -41,6 +42,15 @@ func NewNatsGeminiProxy(apiKey string) *NatsGeminiProxy {
 }
 
 func (n *NatsGeminiProxy) Start(nc *nats.Conn) error {
+
+	ctx := context.Background()
+	client, err := genai.NewClient(ctx, option.WithAPIKey(n.apiKey))
+	if err != nil {
+		return err
+	}
+	n.client = client
+	//defer client.Close()
+
 	srv, err := micro.AddService(nc, micro.Config{
 		Name:        "NatsGemini",
 		Version:     "0.0.1",
@@ -85,16 +95,8 @@ func (n *NatsGeminiProxy) chatHandler(req micro.Request) {
 		return
 	}
 
-	ctx := context.Background()
-	client, err := genai.NewClient(ctx, option.WithAPIKey(n.apiKey))
-	if err != nil {
-		log.Error(err)
-		req.Error("500", err.Error(), nil)
-		return
-	}
-	defer client.Close()
-
-	model := client.GenerativeModel(reqData.Model)
+	// Get the generative model requested by the user:
+	model := n.client.GenerativeModel(reqData.Model)
 
 	// Set system prompt if available in the message history:
 	systemPrompt := createGeminiSystemPrompt(reqData)
@@ -122,8 +124,8 @@ func (n *NatsGeminiProxy) chatHandler(req micro.Request) {
 	var res *genai.GenerateContentResponse
 	sp := spinner.New()
 	action := func() {
-		res, err = session.SendMessage(ctx, userContentParts...)
-		//res, err = model.GenerateContent(ctx, userContentParts...)
+		res, err = session.SendMessage(context.Background(), userContentParts...)
+		//res, err = model.GenerateContent(context.Background(), userContentParts...)
 	}
 
 	sp.Title(fmt.Sprintf("Generate content with model '%s'...", reqData.Model)).Action(action).Run()
@@ -159,16 +161,8 @@ func (n *NatsGeminiProxy) showHandler(req micro.Request) {
 		return
 	}
 
-	ctx := context.Background()
-	client, err := genai.NewClient(ctx, option.WithAPIKey(n.apiKey))
-	if err != nil {
-		log.Error(err)
-		req.Error("500", err.Error(), nil)
-		return
-	}
-	defer client.Close()
-
-	model := client.GenerativeModel(reqData.Model)
+	// Get the generative model requested by the user:
+	model := n.client.GenerativeModel(reqData.Model)
 
 	info, err := model.Info(context.Background())
 	if err != nil {

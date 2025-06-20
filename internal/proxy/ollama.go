@@ -9,6 +9,8 @@ import (
 	"github.com/nats-io/nats.go/micro"
 	"github.com/ollama/ollama/api"
 	log "github.com/sirupsen/logrus"
+	"net/http"
+	"net/url"
 	"runtime"
 	"strings"
 )
@@ -19,7 +21,13 @@ func StartOllamaProxy(natsUrl string, ollamaUrl string) error {
 		return err
 	}
 
-	natsOllamaProxy := NewNatsOllamaProxy()
+	parsedUrl, err := url.Parse(ollamaUrl)
+	if err != nil {
+		return err
+	}
+
+	client := api.NewClient(parsedUrl, http.DefaultClient)
+	natsOllamaProxy := NewNatsOllamaProxy(client)
 	err = natsOllamaProxy.Start(nc)
 	if err != nil {
 		return err
@@ -33,18 +41,14 @@ type NatsOllamaProxy struct {
 	client *api.Client
 }
 
-func NewNatsOllamaProxy() *NatsOllamaProxy {
-	return &NatsOllamaProxy{}
+func NewNatsOllamaProxy(client *api.Client) *NatsOllamaProxy {
+	return &NatsOllamaProxy{
+		client: client,
+	}
 }
 
 func (n *NatsOllamaProxy) Start(nc *nats.Conn) error {
 	log.Infof("Starting nats-ollama-proxy...")
-	client, err := api.ClientFromEnvironment()
-	if err != nil {
-		return err
-	}
-	n.client = client
-
 	srv, err := micro.AddService(nc, micro.Config{
 		Name:        "NatsOllama",
 		Version:     "0.0.1",
@@ -105,7 +109,6 @@ func (n *NatsOllamaProxy) Start(nc *nats.Conn) error {
 }
 
 func (n *NatsOllamaProxy) generateHandler(req micro.Request) {
-
 	var reqData api.GenerateRequest
 	err := json.Unmarshal(req.Data(), &reqData)
 	if err != nil {
@@ -118,10 +121,6 @@ func (n *NatsOllamaProxy) generateHandler(req micro.Request) {
 
 	ctx := context.Background()
 	respFunc := func(resp api.GenerateResponse) error {
-		// Only print the response here; GenerateResponse has a number of other
-		// interesting fields you want to examine.
-		//fmt.Println()
-
 		responseData, err := json.Marshal(resp)
 		if err != nil {
 			req.Error("400", err.Error(), nil)
@@ -289,7 +288,7 @@ func (n *NatsOllamaProxy) showHandler(req micro.Request) {
 		req.Error("400", err.Error(), nil)
 		return
 	}
-	
+
 	err = req.Respond(responseData)
 	if err != nil {
 		log.Error("Error on sending a show response:", err)

@@ -32,7 +32,7 @@ func main() {
 
 // Note: This example is deliberately verbose, so it is easy to understand:
 func chatWithOllama(nc *nats.Conn) {
-	ollamaLlm := llm.NewNatsOllamaLLM(nc)
+	ollamaLlm := llm.NewNatsOllamaLLM(nc, "gemma3:27b")
 
 	ctx, _ := context.WithTimeout(context.Background(), time.Minute*5)
 	firstMessage := api.Message{
@@ -43,7 +43,6 @@ func chatWithOllama(nc *nats.Conn) {
 		},
 	}
 	ollamaRes, err := ollamaLlm.Chat(ctx, &api.ChatRequest{
-		Model: "gemma3:27b",
 		Messages: []api.Message{
 			firstMessage,
 		},
@@ -57,7 +56,7 @@ func chatWithOllama(nc *nats.Conn) {
 
 // Note: This example is deliberately verbose, so it is easy to understand:
 func chatWithGemini(nc *nats.Conn) {
-	geminiLlm := llm.NewNatsGeminiLLM(nc)
+	geminiLlm := llm.NewNatsGeminiLLM(nc, "gemini-2.5-pro-exp-03-25")
 
 	ctx, _ := context.WithTimeout(context.Background(), time.Second*60)
 	firstMessage := api.Message{
@@ -68,7 +67,6 @@ func chatWithGemini(nc *nats.Conn) {
 		},
 	}
 	geminiRes1, err1 := geminiLlm.Chat(ctx, &api.ChatRequest{
-		Model: "gemini-2.5-pro-exp-03-25",
 		Messages: []api.Message{
 			firstMessage,
 		},
@@ -83,7 +81,6 @@ func chatWithGemini(nc *nats.Conn) {
 		Content: "Is the person on the left holding flowers as well?",
 	}
 	geminiRes2, err2 := geminiLlm.Chat(ctx, &api.ChatRequest{
-		Model: "gemini-2.5-pro-exp-03-25",
 		Messages: []api.Message{
 			firstMessage,
 			geminiRes1.Message,
@@ -116,7 +113,7 @@ func readImageData() api.ImageData {
 
 // Note: This example is deliberately verbose, so it is easy to understand:
 func toolCallingWithOllama(nc *nats.Conn) {
-	ollamaLlm := llm.NewNatsOllamaLLM(nc)
+	ollamaLlm := llm.NewNatsOllamaLLM(nc, "mistral-small:24b")
 
 	ctx, _ := context.WithTimeout(context.Background(), time.Second*60)
 	firstMessage := api.Message{
@@ -124,7 +121,6 @@ func toolCallingWithOllama(nc *nats.Conn) {
 		Content: "What is the current temperature in New York City??",
 	}
 	ollamaRes1, err1 := ollamaLlm.Chat(ctx, &api.ChatRequest{
-		Model: "mistral-small:24b",
 		Messages: []api.Message{
 			firstMessage,
 		},
@@ -141,7 +137,6 @@ func toolCallingWithOllama(nc *nats.Conn) {
 		Content: toolResult,
 	}
 	ollamaRes2, err2 := ollamaLlm.Chat(ctx, &api.ChatRequest{
-		Model: "mistral-small:24b",
 		Messages: []api.Message{
 			firstMessage,
 			ollamaRes1.Message,
@@ -157,7 +152,7 @@ func toolCallingWithOllama(nc *nats.Conn) {
 
 // Note: This example is deliberately verbose, so it is easy to understand:
 func toolCallingWithGemini(nc *nats.Conn) {
-	geminiLlm := llm.NewNatsGeminiLLM(nc)
+	geminiLlm := llm.NewNatsGeminiLLM(nc, "gemini-2.5-flash-preview-04-17")
 
 	ctx, _ := context.WithTimeout(context.Background(), time.Second*60)
 	firstMessage := api.Message{
@@ -165,7 +160,6 @@ func toolCallingWithGemini(nc *nats.Conn) {
 		Content: "What time is it?",
 	}
 	geminiRes1, err1 := geminiLlm.Chat(ctx, &api.ChatRequest{
-		Model: "gemini-2.5-flash-preview-04-17",
 		Messages: []api.Message{
 			firstMessage,
 		},
@@ -182,7 +176,6 @@ func toolCallingWithGemini(nc *nats.Conn) {
 		Content: toolResult,
 	}
 	geminiRes2, err2 := geminiLlm.Chat(ctx, &api.ChatRequest{
-		Model: "gemini-2.5-flash-preview-04-17",
 		Messages: []api.Message{
 			firstMessage,
 			geminiRes1.Message,

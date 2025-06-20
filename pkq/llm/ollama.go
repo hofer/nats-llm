@@ -8,6 +8,12 @@ import (
 	"time"
 )
 
+const (
+	ollamaChatSubject  = "ollama.chat"
+	ollamaEmbedSubject = "ollama.embed"
+	ollamaShowSubject  = "ollama.show"
+)
+
 func NewNatsOllamaLLM(nc *nats.Conn, modelName string) *NatsOllamaLLM {
 	return &NatsOllamaLLM{
 		client:    nc,
@@ -23,21 +29,21 @@ type NatsOllamaLLM struct {
 func (n *NatsOllamaLLM) Chat(ctx context.Context, req *api.ChatRequest) (api.ChatResponse, error) {
 	req.Model = n.modelName
 	var response api.ChatResponse
-	err := natsRequest(ctx, n.client, "ollama.chat", req, &response)
+	err := natsRequest(ctx, n.client, ollamaChatSubject, req, &response)
 	return response, err
 }
 
 func (n *NatsOllamaLLM) Embed(ctx context.Context, req *api.EmbedRequest) (api.EmbedResponse, error) {
 	req.Model = n.modelName
 	var response api.EmbedResponse
-	err := natsRequest(ctx, n.client, "ollama.embed", req, &response)
+	err := natsRequest(ctx, n.client, ollamaEmbedSubject, req, &response)
 	return response, err
 }
 
 func (n *NatsOllamaLLM) Show(ctx context.Context, req *api.ShowRequest) (api.ShowResponse, error) {
 	req.Model = n.modelName
 	var response api.ShowResponse
-	err := natsRequest(ctx, n.client, "ollama.show", req, &response)
+	err := natsRequest(ctx, n.client, ollamaShowSubject, req, &response)
 	return response, err
 }
 

@@ -143,7 +143,6 @@ func createOllamaShowResponse(modelInfo *genai.ModelInfo) (api.ShowResponse, err
 	}
 
 	result := api.ShowResponse{
-		//Model: modelInfo.Name,
 		ModelInfo: map[string]any{
 			fmt.Sprintf("%s.context_length", family): modelInfo.InputTokenLimit,
 		},

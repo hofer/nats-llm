@@ -125,7 +125,6 @@ func (n *NatsGeminiProxy) chatHandler(req micro.Request) {
 	sp := spinner.New()
 	action := func() {
 		res, err = session.SendMessage(context.Background(), userContentParts...)
-		//res, err = model.GenerateContent(context.Background(), userContentParts...)
 	}
 
 	sp.Title(fmt.Sprintf("Generate content with model '%s'...", reqData.Model)).Action(action).Run()

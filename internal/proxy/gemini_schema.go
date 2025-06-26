@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/google/generative-ai-go/genai"
 	"github.com/ollama/ollama/api"
 	"github.com/ollama/ollama/types/model"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/genai"
 	"net/http"
 	"strings"
 	"time"
@@ -50,7 +50,7 @@ func createHistoryContent(reqData api.ChatRequest) []*genai.Content {
 	return result
 }
 
-func createUserContentParts(reqData api.ChatRequest) ([]genai.Part, error) {
+func createUserContentParts(reqData api.ChatRequest) ([]*genai.Part, error) {
 	// we assume that the last message is a user inMessage:
 	if len(reqData.Messages) == 0 {
 		return nil, errors.New("no message content found in the request")
@@ -64,31 +64,26 @@ func createUserContentParts(reqData api.ChatRequest) ([]genai.Part, error) {
 	return createContentParts(userMessage), nil
 }
 
-func createContentParts(message api.Message) []genai.Part {
-	parts := []genai.Part{}
+func createContentParts(message api.Message) []*genai.Part {
+	parts := []*genai.Part{}
 	if len(message.Content) > 0 && message.Role != "tool" {
-		parts = append(parts, genai.Text(message.Content))
+		parts = append(parts, genai.NewPartFromText(message.Content))
 	}
 
 	if message.Role == "tool" {
 		toolResult := jsonToMap(message.Content)
-		parts = append(parts, genai.FunctionResponse{
-			Name:     toolResult["name"].(string),
-			Response: toolResult,
-		})
+		parts = append(parts, genai.NewPartFromFunctionResponse(toolResult["name"].(string), toolResult))
 	}
 
 	for _, toolCall := range message.ToolCalls {
-		parts = append(parts, genai.FunctionCall{
-			Name: toolCall.Function.Name,
-			Args: toolCall.Function.Arguments,
-		})
+		parts = append(parts, genai.NewPartFromFunctionCall(toolCall.Function.Name, toolCall.Function.Arguments))
 	}
 
 	for _, imageData := range message.Images {
 		mimeType := http.DetectContentType(imageData)
-		parts = append(parts, genai.ImageData(strings.Split(mimeType, "/")[1], imageData))
+		parts = append(parts, genai.NewPartFromBytes(imageData, strings.Split(mimeType, "/")[1]))
 	}
+
 	return parts
 }
 
@@ -96,7 +91,8 @@ func createGeminiSystemPrompt(data api.ChatRequest) *genai.Content {
 	for _, m := range data.Messages {
 		if m.Role == "system" {
 			return &genai.Content{
-				Parts: []genai.Part{genai.Text(m.Content)},
+				Role:  "system",
+				Parts: []*genai.Part{genai.NewPartFromText(m.Content)},
 			}
 		}
 	}
@@ -136,9 +132,9 @@ func createGeminiToolSchema(reqData api.ChatRequest) []*genai.Tool {
 
 const family = "gemini"
 
-func createOllamaShowResponse(modelInfo *genai.ModelInfo) (api.ShowResponse, error) {
+func createOllamaShowResponse(modelInfo *genai.Model) (api.ShowResponse, error) {
 	capabilities := []model.Capability{}
-	for _, genMethod := range modelInfo.SupportedGenerationMethods {
+	for _, genMethod := range modelInfo.SupportedActions {
 		capabilities = append(capabilities, model.Capability(genMethod))
 	}
 
@@ -165,19 +161,15 @@ func createOllamaChatResponse(resp *genai.GenerateContentResponse) (api.ChatResp
 	candidate := resp.Candidates[0]
 	if candidate.Content != nil {
 		for _, part := range candidate.Content.Parts {
-			switch part.(type) {
-			case genai.Text:
-				responseText += fmt.Sprint(part)
-			case genai.FunctionCall:
-				fc := part.(genai.FunctionCall)
+			responseText += part.Text
+
+			if part.FunctionCall != nil {
 				toolCalls = append(toolCalls, api.ToolCall{
 					Function: api.ToolCallFunction{
-						Name:      fc.Name,
-						Arguments: fc.Args,
+						Name:      part.FunctionCall.Name,
+						Arguments: part.FunctionCall.Args,
 					},
 				})
-			default:
-				// Not handled...
 			}
 		}
 	}
@@ -189,7 +181,7 @@ func createOllamaChatResponse(resp *genai.GenerateContentResponse) (api.ChatResp
 			Role:      "assistant",
 			ToolCalls: toolCalls,
 		},
-		DoneReason: candidate.FinishReason.String(),
+		DoneReason: string(candidate.FinishReason),
 		Done:       candidate.FinishReason == genai.FinishReasonStop,
 	}, nil
 }

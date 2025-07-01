@@ -1,9 +1,9 @@
 package proxy
 
 import (
-	"github.com/google/generative-ai-go/genai"
 	"github.com/ollama/ollama/api"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/genai"
 
 	"testing"
 )
@@ -12,7 +12,7 @@ func TestCreateContentParts(t *testing.T) {
 	tt := []struct {
 		testName     string
 		inMessage    api.Message
-		expectedPart []genai.Part
+		expectedPart []*genai.Part
 	}{
 		{
 			testName: "user message",
@@ -20,8 +20,8 @@ func TestCreateContentParts(t *testing.T) {
 				Content: "Hello World",
 				Role:    "user",
 			},
-			expectedPart: []genai.Part{
-				genai.Text("Hello World"),
+			expectedPart: []*genai.Part{
+				genai.NewPartFromText("Hello World"),
 			},
 		},
 		{
@@ -33,9 +33,9 @@ func TestCreateContentParts(t *testing.T) {
 					[]byte{71, 111},
 				},
 			},
-			expectedPart: []genai.Part{
-				genai.Text("Hello World"),
-				genai.Blob{Data: []byte{71, 111}, MIMEType: "image/plain; charset=utf-8"},
+			expectedPart: []*genai.Part{
+				genai.NewPartFromText("Hello World"),
+				genai.NewPartFromBytes([]byte{71, 111}, "plain; charset=utf-8"),
 			},
 		},
 		{
@@ -47,9 +47,9 @@ func TestCreateContentParts(t *testing.T) {
 					{Function: api.ToolCallFunction{Name: "hello_world"}},
 				},
 			},
-			expectedPart: []genai.Part{
-				genai.Text("Hello World"),
-				genai.FunctionCall{Name: "hello_world"},
+			expectedPart: []*genai.Part{
+				genai.NewPartFromText("Hello World"),
+				genai.NewPartFromFunctionCall("hello_world", nil),
 			},
 		},
 		{
@@ -58,11 +58,11 @@ func TestCreateContentParts(t *testing.T) {
 				Role:    "tool",
 				Content: "{\"data\": \"whatever result from function call\", \"name\": \"hello_world\"}",
 			},
-			expectedPart: []genai.Part{
-				genai.FunctionResponse{Name: "hello_world", Response: map[string]any{
+			expectedPart: []*genai.Part{
+				genai.NewPartFromFunctionResponse("hello_world", map[string]any{
 					"data": "whatever result from function call",
 					"name": "hello_world",
-				}},
+				}),
 			},
 		},
 	}

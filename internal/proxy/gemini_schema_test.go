@@ -35,7 +35,7 @@ func TestCreateContentParts(t *testing.T) {
 			},
 			expectedPart: []*genai.Part{
 				genai.NewPartFromText("Hello World"),
-				genai.NewPartFromBytes([]byte{71, 111}, "plain; charset=utf-8"),
+				genai.NewPartFromBytes([]byte{71, 111}, "text/plain; charset=utf-8"),
 			},
 		},
 		{

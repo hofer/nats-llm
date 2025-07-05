@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/hofer/nats-llm/internal/proxy"
+	"github.com/nats-io/nats.go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
@@ -20,7 +21,12 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		log.Infof("Connecting to the Nats.io Server: %s", proxyNatsUrl)
-		err := proxy.StartNatsGeminiProxy(proxyNatsUrl, apiKey)
+		nc, err := nats.Connect(proxyNatsUrl)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = proxy.StartNatsGeminiProxy(nc, apiKey)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -13,14 +13,9 @@ import (
 	"runtime"
 )
 
-func StartNatsGeminiProxy(natsUrl string, apiKey string) error {
-	nc, err := nats.Connect(natsUrl)
-	if err != nil {
-		return err
-	}
-
+func StartNatsGeminiProxy(nc *nats.Conn, apiKey string) error {
 	natsGeminiProxy := NewNatsGeminiProxy(apiKey)
-	err = natsGeminiProxy.Start(nc)
+	err := natsGeminiProxy.Start(nc)
 	if err != nil {
 		return err
 	}
@@ -41,7 +36,6 @@ func NewNatsGeminiProxy(apiKey string) *NatsGeminiProxy {
 }
 
 func (n *NatsGeminiProxy) Start(nc *nats.Conn) error {
-
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, &genai.ClientConfig{
 		APIKey: n.apiKey,

@@ -81,7 +81,8 @@ func createContentParts(message api.Message) []*genai.Part {
 
 	for _, imageData := range message.Images {
 		mimeType := http.DetectContentType(imageData)
-		parts = append(parts, genai.NewPartFromBytes(imageData, strings.Split(mimeType, "/")[1]))
+		//parts = append(parts, genai.NewPartFromBytes(imageData, strings.Split(mimeType, "/")[1]))
+		parts = append(parts, genai.NewPartFromBytes(imageData, mimeType))
 	}
 
 	return parts
@@ -100,6 +101,7 @@ func createGeminiSystemPrompt(data api.ChatRequest) *genai.Content {
 }
 
 func createGeminiToolSchema(reqData api.ChatRequest) []*genai.Tool {
+	result := []*genai.Tool{}
 	geminiFunctions := []*genai.FunctionDeclaration{}
 	for _, tool := range reqData.Tools {
 		props := map[string]*genai.Schema{}
@@ -124,7 +126,9 @@ func createGeminiToolSchema(reqData api.ChatRequest) []*genai.Tool {
 	// For some strange reasons the gemini api accepts multiple tools, but then ever only
 	// works with the functions in the first tool. So, to make sure gemini works with all
 	// functions, we just pass all functions with the first tool.
-	result := []*genai.Tool{{FunctionDeclarations: geminiFunctions}}
+	if len(geminiFunctions) > 0 {
+		result = append(result, &genai.Tool{FunctionDeclarations: geminiFunctions})
+	}
 	//v, _ := json.Marshal(result)
 	//log.Infof("%v", string(v))
 	return result

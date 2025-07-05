@@ -56,7 +56,7 @@ func chatWithOllama(nc *nats.Conn) {
 
 // Note: This example is deliberately verbose, so it is easy to understand:
 func chatWithGemini(nc *nats.Conn) {
-	geminiLlm := llm.NewNatsGeminiLLM(nc, "gemini-2.5-pro-exp-03-25")
+	geminiLlm := llm.NewNatsGeminiLLM(nc, "gemini-2.5-flash")
 
 	ctx, _ := context.WithTimeout(context.Background(), time.Second*60)
 	firstMessage := api.Message{

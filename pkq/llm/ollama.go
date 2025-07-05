@@ -3,6 +3,7 @@ package llm
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/nats-io/nats.go"
 	"github.com/ollama/ollama/api"
 	"time"
@@ -70,6 +71,10 @@ func natsRequest[T ApiRequest, A ApiResponse](ctx context.Context, n *nats.Conn,
 	msg, err := n.Request(subject, jsonStr, remainingDuration)
 	if err != nil {
 		return err
+	}
+
+	if msg.Data == nil || len(msg.Data) == 0 {
+		return fmt.Errorf("Failed to create a response from a given request")
 	}
 
 	err = json.Unmarshal(msg.Data, resp)

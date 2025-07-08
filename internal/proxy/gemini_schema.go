@@ -81,7 +81,6 @@ func createContentParts(message api.Message) []*genai.Part {
 
 	for _, imageData := range message.Images {
 		mimeType := http.DetectContentType(imageData)
-		//parts = append(parts, genai.NewPartFromBytes(imageData, strings.Split(mimeType, "/")[1]))
 		parts = append(parts, genai.NewPartFromBytes(imageData, mimeType))
 	}
 

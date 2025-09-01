@@ -3,7 +3,7 @@ module github.com/hofer/nats-llm
 go 1.24.1
 
 require (
-	github.com/charmbracelet/fang v0.3.0
+	github.com/charmbracelet/fang v0.4.0
 	github.com/charmbracelet/huh/spinner v0.0.0-20241216182847-438e4f741435
 	github.com/invopop/jsonschema v0.13.0
 	github.com/nats-io/nats.go v1.45.0
@@ -25,7 +25,7 @@ require (
 	github.com/charmbracelet/bubbletea v1.2.5-0.20241205214244-9306010a31ee // indirect
 	github.com/charmbracelet/colorprofile v0.3.1 // indirect
 	github.com/charmbracelet/lipgloss v1.0.0 // indirect
-	github.com/charmbracelet/lipgloss/v2 v2.0.0-beta.2 // indirect
+	github.com/charmbracelet/lipgloss/v2 v2.0.0-beta.3 // indirect
 	github.com/charmbracelet/x/ansi v0.8.0 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.13 // indirect
 	github.com/charmbracelet/x/exp/charmtone v0.0.0-20250603201427-c31516f43444 // indirect

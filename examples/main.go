@@ -2,13 +2,14 @@ package main
 
 import (
 	"context"
+	"io"
+	"os"
+	"time"
+
 	"github.com/hofer/nats-llm/pkq/llm"
 	"github.com/nats-io/nats.go"
 	"github.com/ollama/ollama/api"
 	log "github.com/sirupsen/logrus"
-	"io"
-	"os"
-	"time"
 )
 
 func main() {
@@ -196,25 +197,9 @@ func getTools() []api.Tool {
 			Function: api.ToolFunction{
 				Name:        "get_temperature",
 				Description: "Returns the current temperature for a given city name",
-				Parameters: struct {
-					Type       string   `json:"type"`
-					Defs       any      `json:"$defs,omitempty"`
-					Items      any      `json:"items,omitempty"`
-					Required   []string `json:"required"`
-					Properties map[string]struct {
-						Type        api.PropertyType `json:"type"`
-						Items       any              `json:"items,omitempty"`
-						Description string           `json:"description"`
-						Enum        []any            `json:"enum,omitempty"`
-					} `json:"properties"`
-				}{
+				Parameters: api.ToolFunctionParameters{
 					Type: "object",
-					Properties: map[string]struct {
-						Type        api.PropertyType `json:"type"`
-						Items       any              `json:"items,omitempty"`
-						Description string           `json:"description"`
-						Enum        []any            `json:"enum,omitempty"`
-					}{
+					Properties: map[string]api.ToolProperty{
 						"city": {
 							Type: api.PropertyType{
 								"string",

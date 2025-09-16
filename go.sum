@@ -18,8 +18,8 @@ github.com/charmbracelet/bubbletea v1.2.5-0.20241205214244-9306010a31ee h1:xNijb
 github.com/charmbracelet/bubbletea v1.2.5-0.20241205214244-9306010a31ee/go.mod h1:Hbk5+oE4a7cDyjfdPi4sHZ42aGTMYcmHnVDhsRswn7A=
 github.com/charmbracelet/colorprofile v0.3.1 h1:k8dTHMd7fgw4bnFd7jXTLZrSU/CQrKnL3m+AxCzDz40=
 github.com/charmbracelet/colorprofile v0.3.1/go.mod h1:/GkGusxNs8VB/RSOh3fu0TJmQ4ICMMPApIIVn0KszZ0=
-github.com/charmbracelet/fang v0.4.0 h1:boBxmdcFghTeotqkD2itXi7SMBozdIlcslRqjboSJDg=
-github.com/charmbracelet/fang v0.4.0/go.mod h1:9gCUAHmVx5BwSafeyNr3GI0GgvlB1WYjL21SkPp1jyU=
+github.com/charmbracelet/fang v0.4.1 h1:NC0Y4oqg7YuZcBg/KKsHy8DSow0ZDjF4UJL7LwtA0dE=
+github.com/charmbracelet/fang v0.4.1/go.mod h1:9gCUAHmVx5BwSafeyNr3GI0GgvlB1WYjL21SkPp1jyU=
 github.com/charmbracelet/huh/spinner v0.0.0-20241216182847-438e4f741435 h1:GnQvPBetPFyWaq4xVP4iia8UZAaLMVUk4UZ1O3Gdx44=
 github.com/charmbracelet/huh/spinner v0.0.0-20241216182847-438e4f741435/go.mod h1:YqGqPo+vKnyTc0xppm1sv3Ir8FwG9bSW2H33LT++Xdg=
 github.com/charmbracelet/lipgloss v1.0.0 h1:O7VkGDvqEdGi93X+DeqsQ7PKHDgtQfF8j8/O2qFMQNg=

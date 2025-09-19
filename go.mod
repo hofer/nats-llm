@@ -7,7 +7,7 @@ require (
 	github.com/charmbracelet/huh/spinner v0.0.0-20241216182847-438e4f741435
 	github.com/invopop/jsonschema v0.13.0
 	github.com/nats-io/nats.go v1.45.0
-	github.com/ollama/ollama v0.11.10
+	github.com/ollama/ollama v0.12.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.10.1
 	github.com/stretchr/testify v1.11.1
@@ -37,6 +37,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect
 	github.com/googleapis/gax-go/v2 v2.14.2 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect

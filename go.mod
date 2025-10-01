@@ -3,7 +3,7 @@ module github.com/hofer/nats-llm
 go 1.24.2
 
 require (
-	github.com/charmbracelet/fang v0.4.2
+	github.com/charmbracelet/fang v0.4.3
 	github.com/charmbracelet/huh/spinner v0.0.0-20241216182847-438e4f741435
 	github.com/invopop/jsonschema v0.13.0
 	github.com/nats-io/nats.go v1.46.0

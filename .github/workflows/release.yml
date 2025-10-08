@@ -1,0 +1,45 @@
+# .github/workflows/release.yml
+
+name: Create Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    # Grants permissions for the job to create tags and releases
+    permissions:
+      contents: write
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Fetches all history for all tags and branches
+          fetch-depth: 0
+
+      # (Optional but recommended) Run tests to ensure the library is stable before release
+      # - name: Set up Go
+      #   uses: actions/setup-go@v5
+      #   with:
+      #     go-version: "1.24" # Specify your Go version
+      # - name: Run tests
+      #   run: go test ./...
+
+      - name: Get the next version tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: "patch" # Increment the patch version number
+
+      - name: Create a GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          # The name of the tag is the output from the previous step
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+          # Automatically generate the release notes from commit messages
+          generate_release_notes: true

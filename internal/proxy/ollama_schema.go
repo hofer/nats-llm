@@ -2,8 +2,10 @@ package proxy
 
 import (
 	"encoding/json"
-	"github.com/invopop/jsonschema"
+
 	"github.com/ollama/ollama/api"
+	"github.com/swaggest/assertjson"
+	"github.com/swaggest/jsonschema-go"
 )
 
 type NatsLlmProxySchema struct {
@@ -12,19 +14,22 @@ type NatsLlmProxySchema struct {
 }
 
 func schema(request any, response any) (*NatsLlmProxySchema, error) {
-	reflector := jsonschema.Reflector{DoNotReference: true}
-	reqSchema, err := reflector.Reflect(request).MarshalJSON()
+	reflector := jsonschema.Reflector{}
+	reqSchema, err := reflector.Reflect(request)
 	if err != nil {
 		return nil, err
 	}
+	reqSchemaStr, _ := assertjson.MarshalIndentCompact(reqSchema, "", " ", 80)
 
-	resSchema, err := reflector.Reflect(response).MarshalJSON()
+	resSchema, err := reflector.Reflect(response)
 	if err != nil {
 		return nil, err
 	}
+	resSchemaStr, _ := assertjson.MarshalIndentCompact(resSchema, "", " ", 80)
+
 	return &NatsLlmProxySchema{
-		Request:  string(reqSchema),
-		Response: string(resSchema),
+		Request:  string(reqSchemaStr),
+		Response: string(resSchemaStr),
 	}, nil
 }
 

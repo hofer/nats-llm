@@ -6,8 +6,8 @@ toolchain go1.24.8
 
 require (
 	github.com/hofer/nats-llm v0.0.0
-	github.com/nats-io/nats.go v1.46.0
-	github.com/ollama/ollama v0.12.3
+	github.com/nats-io/nats.go v1.47.0
+	github.com/ollama/ollama v0.12.6
 	github.com/sirupsen/logrus v1.9.3
 )
 

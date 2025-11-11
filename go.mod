@@ -11,7 +11,7 @@ require (
 	github.com/spf13/cobra v1.10.1
 	github.com/stretchr/testify v1.11.1
 	github.com/swaggest/assertjson v1.9.0
-	github.com/swaggest/jsonschema-go v0.3.78
+	github.com/swaggest/jsonschema-go v0.3.79
 	google.golang.org/genai v1.32.0
 )
 

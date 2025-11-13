@@ -12,7 +12,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/swaggest/assertjson v1.9.0
 	github.com/swaggest/jsonschema-go v0.3.78
-	google.golang.org/genai v1.32.0
+	google.golang.org/genai v1.35.0
 )
 
 require (

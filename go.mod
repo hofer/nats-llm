@@ -6,7 +6,7 @@ require (
 	github.com/charmbracelet/fang v0.4.3
 	github.com/charmbracelet/huh/spinner v0.0.0-20251005153135-a01a1e304532
 	github.com/nats-io/nats.go v1.47.0
-	github.com/ollama/ollama v0.12.6
+	github.com/ollama/ollama v0.12.11
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.10.1
 	github.com/stretchr/testify v1.11.1
